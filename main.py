@@ -11,8 +11,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-
 GENDER, PHOTO, LOCATION, BIO = range(4)
+
 
 def start(bot, update):
     reply_keyboard = [['Boy', 'Girl', 'Other']]
@@ -24,6 +24,7 @@ def start(bot, update):
         reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
     return True
 
+
 def gender(bot, update):
     user = update.message.from_user
     logger.info("Gender of %s: %s", user.first_name, update.message.text)
@@ -32,6 +33,7 @@ def gender(bot, update):
                               reply_markup=ReplyKeyboardRemove())
 
     return True
+
 
 def cancel(bot, update):
     user = update.message.from_user
@@ -44,10 +46,13 @@ def cancel(bot, update):
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
+
+
 logger.warning('Update "%s" caused error "%s"', update, error)
 
+
 def main():
-    updater = Updater("TOKEN")
+    updater = Updater("799113969:AAH96exoiIRg2W6lp03x2cshwVLbGMmtuFE")
     dp = updater.dispatcher
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
@@ -56,7 +61,6 @@ def main():
 
         states={
             GENDER: [RegexHandler('^(Boy|Girl|Other)$', gender)],
-
 
         },
 
@@ -74,7 +78,6 @@ def main():
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT. This should be used most of the time, since
     # start_polling() is non-blocking and will stop the bot gracefully.
-
 
     updater.idle()
 
