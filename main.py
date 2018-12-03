@@ -52,7 +52,7 @@ logger.warning('Update "%s" caused error "%s"', update, error)
 
 
 def main():
-    updater = Updater("799113969:AAH96exoiIRg2W6lp03x2cshwVLbGMmtuFE")
+    updater = Updater("Token")
     dp = updater.dispatcher
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
