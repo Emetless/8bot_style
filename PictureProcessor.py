@@ -1,7 +1,8 @@
-from PIL import ImageDraw
+from PIL import ImageDraw, Image
+from threading import Thread
 
 
-class PictureProcessor:
+class PictureProcessor(Thread):
     Apaette = {'черно-белое': ['000000000', '255255255'],
                'Геймбой': ['000000000', '052104086', '136192112', '224248208'],
                'Apple 2': ['000000000', '062049162', '087066000', '140062052', '084084084', '141071179', '144095037',
@@ -11,11 +12,15 @@ class PictureProcessor:
                                  '171171171',
                                  '204204204', '255255255']}
 
-
-    def __init__(self, image, resolution, palette):
-        self.image = image
+    def __init__(self, image_name, resolution, palette):
+        Thread.__init__(self)
         self.resolution = resolution
         self.palette = palette
+        self.image_name = image_name
+        self.image = Image.open('files/image_' + image_name + '.jpg')
+        self.Pixilizer()
+        self.Colorer()
+        del self.image
 
     def Pixilizer(self):
         pix = self.image.load()
@@ -40,6 +45,7 @@ class PictureProcessor:
                                 ((a + 1) * self.resolution - 1, (b + 1) * self.resolution - 1)),
                                fill=(middleR, middleG, middleB))
 
+        self.image.save('files/ans_' + self.image_name + '.jpeg')
         del draw
 
     def Colorer(self):
@@ -81,5 +87,5 @@ class PictureProcessor:
                 draw.rectangle(((a * self.resolution, b * self.resolution), ((a + 1) * self.resolution - 1,
                                                                              (b + 1) * self.resolution - 1)),
                                fill=(int(fin[0:3]), int(fin[3:6]), int(fin[6:9])))
-
+        self.image.save('files/fin_' + self.image_name + '.jpeg')
         del draw

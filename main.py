@@ -1,14 +1,11 @@
-from time import sleep
-
-import requests
 import logging
 
-from PIL import Image
+from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, RegexHandler, CommandHandler, ConversationHandler, MessageHandler, Filters
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove, update
+
+from Initializer import Initializer
 
 # Enable logging
-import PictureProcessor
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -18,13 +15,12 @@ logger = logging.getLogger(__name__)
 PHOTO, RESOLUTION, COLOR = range(3)
 
 
-
 def start(bot, update):
     update.message.reply_text(
-        'Привет,  я 8 битный бот'
+        'Привет,  я 8 битный бот! \n'
         'Отправь /cancel для того чтобы меня остановить.\n\n'
-        'Отправь мне фотографию и я её  изменюю'
-        'для лучшего качества отправь картиннку файлом')
+        'Отправь мне фотографию и я её изменю. Для лучшего качества отправь картиннку файлом'
+        '')
     return PHOTO
 
 
@@ -33,7 +29,8 @@ def photo(bot, update):
 
     user = update.message.from_user
     photo_file = bot.get_file(update.message.photo[-1].file_id)
-    photo_file.download('temp.jpg')
+    name = 'files/image_'+user.username+'.jpg'
+    photo_file.download(name)
     logger.info("Photo of %s: ", user.first_name)
     update.message.reply_text('Окей, теперь выбери разрешение будущего изображения',
                               reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
@@ -68,32 +65,17 @@ def resolution(bot, update):
 
 
 def showResult(bot, update):
-    user = update.message.from_user
-    image = Image.open('temp.jpg')
-    print(resol)
-    re = 1
-    if resol == 'Не сжатое':
-        re = 1
-    elif resol == 'Среднее сжатие':
-        re = 8
-    elif resol == 'Сильное сжатие':
-        re = 16
-    print(re)
-    worker = PictureProcessor.PictureProcessor(image, re, update.message.text)
-    worker.Pixilizer()
-    image.save("ans.jpeg", "JPEG")
-    worker.Colorer()
-    del worker
-    image.save("fin.jpeg", "JPEG")
-    del image
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('ans.jpeg', 'rb'))
-    bot.send_photo(chat_id=update.message.chat_id, photo=open('fin.jpeg', 'rb'))
-    bot.send_document(chat_id=update.message.chat_id, document=open('ans.jpeg', 'rb'))
-    bot.send_document(chat_id=update.message.chat_id, document=open('fin.jpeg', 'rb'))
-    logger.info("Return process photo %s: ", update.message.text)
-    update.message.reply_text('Лови свои фотографии'
-                              'Если хочешь  отправить еще нажми /start',
+    update.message.reply_text('Подожди, Я обрабатываю твою фотографию',
                               reply_markup=ReplyKeyboardRemove())
+    user = update.message.from_user
+    Initializer.run(user.username, resol, update.message.text)
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('files/ans_'+user.username+'.jpeg', 'rb'))
+    bot.send_photo(chat_id=update.message.chat_id, photo=open('files/fin_'+user.username+'.jpeg', 'rb'))
+    bot.send_document(chat_id=update.message.chat_id, document=open('files/ans_'+user.username+'.jpeg', 'rb'))
+    bot.send_document(chat_id=update.message.chat_id, document=open('files/fin_'+user.username+'.jpeg', 'rb'))
+    logger.info("Return process photo %s: ", update.message.text)
+    update.message.reply_text('Лови свои фотографии \n'
+                              'Если хочешь  отправить еще нажми \n /start')
 
     return ConversationHandler.END
 
@@ -101,7 +83,7 @@ def showResult(bot, update):
 def cancel(bot, update):
     user = update.message.from_user
     logger.info("User %s canceled the conversation.", user.first_name)
-    update.message.reply_text('Bye! I hope we can talk again some day.',
+    update.message.reply_text('Пиши мне еще \n /start',
                               reply_markup=ReplyKeyboardRemove())
 
     return ConversationHandler.END
@@ -114,12 +96,16 @@ def error(bot, update, error):
 
 
 def main():
-    # REQUEST_KWARGS = {
-    #     'proxy_url': 'http://62.210.149.33:10534/'    прокся которая не нужна
-    #
-    # }
+    TOKEN = 'Token here'
+    REQUEST_KWARGS = {
+        #'proxy_url': 'proxyurl',
+        # 'urllib3_proxy_kwargs': {
+        #     'username': 'username',
+        #     'password': 'password',
+        # }
+    }
 
-    updater = Updater("TOKEN" )
+    updater = Updater(TOKEN, request_kwargs=REQUEST_KWARGS)
     dp = updater.dispatcher
 
     # Add conversation handler with the states GENDER, PHOTO, LOCATION and BIO
